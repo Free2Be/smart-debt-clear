@@ -71,7 +71,25 @@ export function CardsPage() {
                     </div>
                   </div>
                   <div className="text-2xl font-bold tracking-tight mb-1">{fmtMoney(c.balance)}</div>
-                  <div className="text-xs text-muted-foreground mb-2">of {fmtMoney(c.credit_limit)} limit</div>
+                  <div className="text-xs text-muted-foreground mb-3">of {fmtMoney(c.credit_limit)} limit</div>
+                  {c.statement_balance > 0 && (
+                    <div className="rounded-md border border-border bg-accent/40 p-3 mb-3 space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Pay to avoid interest</span>
+                        <span className="font-semibold text-success">{fmtMoney(c.statement_balance)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Pending (post-statement)</span>
+                        <span className="font-medium">{fmtMoney(Math.max(0, c.balance - c.statement_balance))}</span>
+                      </div>
+                      {c.statement_due_date && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Due by</span>
+                          <span className="font-medium">{new Date(c.statement_due_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <Progress value={Math.min(100, cu)} />
                   <div className={`text-xs mt-1 font-medium ${tone}`}>{cu.toFixed(0)}% used</div>
                 </Card>
@@ -88,7 +106,7 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
   open: boolean; onOpenChange: (v: boolean) => void; editing: CreditCard | null;
   onSubmit: (row: Partial<CreditCard> & { id?: string }) => Promise<void>;
 }) {
-  const [f, setF] = useState({ name: "", balance: "", credit_limit: "", apr: "", minimum_payment: "", due_day: "", statement_day: "" });
+  const [f, setF] = useState({ name: "", balance: "", credit_limit: "", apr: "", minimum_payment: "", due_day: "", statement_day: "", statement_balance: "", statement_due_date: "" });
   useEffect(() => {
     if (!open) return;
     setF({
@@ -99,6 +117,8 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
       minimum_payment: editing ? String(editing.minimum_payment) : "",
       due_day: editing?.due_day ? String(editing.due_day) : "",
       statement_day: editing?.statement_day ? String(editing.statement_day) : "",
+      statement_balance: editing ? String(editing.statement_balance ?? 0) : "",
+      statement_due_date: editing?.statement_due_date ?? "",
     });
   }, [open, editing]);
 
@@ -115,6 +135,8 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
       minimum_payment: num(f.minimum_payment),
       due_day: f.due_day ? Number(f.due_day) : null,
       statement_day: f.statement_day ? Number(f.statement_day) : null,
+      statement_balance: num(f.statement_balance),
+      statement_due_date: f.statement_due_date || null,
     });
   };
 
@@ -132,16 +154,21 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-2">
             <Label>Name</Label>
-            <Input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Visa Rewards" />
+            <Input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Chase Freedom" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {F("balance", "Current balance")}
             {F("credit_limit", "Credit limit")}
             {F("apr", "APR %")}
             {F("minimum_payment", "Minimum payment")}
+            {F("statement_balance", "Statement balance (interest-free)")}
+            {F("statement_due_date", "Statement due date", "date", "")}
             {F("due_day", "Due day", "number", "1")}
             {F("statement_day", "Statement day", "number", "1")}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Chase (and most issuers) charge no interest on new purchases if you pay the full <strong>statement balance</strong> by the due date. Anything above that is your pending/remaining balance.
+          </p>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit">{editing ? "Save" : "Add"}</Button>

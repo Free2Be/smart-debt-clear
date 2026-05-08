@@ -93,7 +93,9 @@ export type Database = {
           minimum_payment: number
           name: string
           priority: number
+          statement_balance: number
           statement_day: number | null
+          statement_due_date: string | null
           user_id: string
         }
         Insert: {
@@ -106,7 +108,9 @@ export type Database = {
           minimum_payment?: number
           name: string
           priority?: number
+          statement_balance?: number
           statement_day?: number | null
+          statement_due_date?: string | null
           user_id: string
         }
         Update: {
@@ -119,7 +123,9 @@ export type Database = {
           minimum_payment?: number
           name?: string
           priority?: number
+          statement_balance?: number
           statement_day?: number | null
+          statement_due_date?: string | null
           user_id?: string
         }
         Relationships: []
