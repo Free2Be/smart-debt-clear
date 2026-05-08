@@ -35,6 +35,8 @@ export interface CreditCard {
   due_day: number | null;
   statement_day: number | null;
   priority: number;
+  statement_balance: number;
+  statement_due_date: string | null;
 }
 export interface SavingsAccount {
   id: string;
