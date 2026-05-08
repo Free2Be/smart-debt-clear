@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppIncomeRouteImport } from './routes/_app.income'
+import { Route as AppCardsRouteImport } from './routes/_app.cards'
 import { Route as AppBillsRouteImport } from './routes/_app.bills'
 
 const LoginRoute = LoginRouteImport.update({
@@ -34,6 +35,11 @@ const AppIncomeRoute = AppIncomeRouteImport.update({
   path: '/income',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCardsRoute = AppCardsRouteImport.update({
+  id: '/cards',
+  path: '/cards',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBillsRoute = AppBillsRouteImport.update({
   id: '/bills',
   path: '/bills',
@@ -44,11 +50,13 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/cards': typeof AppCardsRoute
   '/income': typeof AppIncomeRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/cards': typeof AppCardsRoute
   '/income': typeof AppIncomeRoute
   '/': typeof AppIndexRoute
 }
@@ -57,19 +65,21 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/bills': typeof AppBillsRoute
+  '/_app/cards': typeof AppCardsRoute
   '/_app/income': typeof AppIncomeRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/bills' | '/income'
+  fullPaths: '/' | '/login' | '/bills' | '/cards' | '/income'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/bills' | '/income' | '/'
+  to: '/login' | '/bills' | '/cards' | '/income' | '/'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/bills'
+    | '/_app/cards'
     | '/_app/income'
     | '/_app/'
   fileRoutesById: FileRoutesById
@@ -109,6 +119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIncomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/cards': {
+      id: '/_app/cards'
+      path: '/cards'
+      fullPath: '/cards'
+      preLoaderRoute: typeof AppCardsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/bills': {
       id: '/_app/bills'
       path: '/bills'
@@ -121,12 +138,14 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppBillsRoute: typeof AppBillsRoute
+  AppCardsRoute: typeof AppCardsRoute
   AppIncomeRoute: typeof AppIncomeRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillsRoute: AppBillsRoute,
+  AppCardsRoute: AppCardsRoute,
   AppIncomeRoute: AppIncomeRoute,
   AppIndexRoute: AppIndexRoute,
 }
