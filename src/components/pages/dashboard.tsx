@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useIncome, useBills, useCards, useSavings, useSettings, useBillPayments } from "@/lib/data";
 import { fmtMoney, incomeOccurrencesInMonth, simulatePayoff, addMonths } from "@/lib/finance";
-import { PageHeader, StatCard, EmptyState } from "@/components/ui-bits";
+import { PageHeader, StatCard } from "@/components/ui-bits";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
