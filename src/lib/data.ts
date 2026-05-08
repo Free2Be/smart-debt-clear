@@ -77,8 +77,8 @@ export function useUpsertIncome() {
     mutationFn: async (row: Partial<IncomeSource> & { id?: string }) => {
       const payload = { ...row, user_id: user!.id };
       const { error } = row.id
-        ? await supabase.from("income_sources").update(payload).eq("id", row.id)
-        : await supabase.from("income_sources").insert(payload);
+        ? await supabase.from("income_sources").update(payload as never).eq("id", row.id)
+        : await supabase.from("income_sources").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["income"] }),
@@ -117,8 +117,8 @@ export function useUpsertBill() {
     mutationFn: async (row: Partial<Bill> & { id?: string }) => {
       const payload = { ...row, user_id: user!.id };
       const { error } = row.id
-        ? await supabase.from("bills").update(payload).eq("id", row.id)
-        : await supabase.from("bills").insert(payload);
+        ? await supabase.from("bills").update(payload as never).eq("id", row.id)
+        : await supabase.from("bills").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bills"] }),
@@ -203,8 +203,8 @@ export function useUpsertCard() {
     mutationFn: async (row: Partial<CreditCard> & { id?: string }) => {
       const payload = { ...row, user_id: user!.id };
       const { error } = row.id
-        ? await supabase.from("credit_cards").update(payload).eq("id", row.id)
-        : await supabase.from("credit_cards").insert(payload);
+        ? await supabase.from("credit_cards").update(payload as never).eq("id", row.id)
+        : await supabase.from("credit_cards").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["cards"] }),
@@ -243,8 +243,8 @@ export function useUpsertSavings() {
     mutationFn: async (row: Partial<SavingsAccount> & { id?: string }) => {
       const payload = { ...row, user_id: user!.id };
       const { error } = row.id
-        ? await supabase.from("savings_accounts").update(payload).eq("id", row.id)
-        : await supabase.from("savings_accounts").insert(payload);
+        ? await supabase.from("savings_accounts").update(payload as never).eq("id", row.id)
+        : await supabase.from("savings_accounts").insert(payload as never);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["savings"] }),
