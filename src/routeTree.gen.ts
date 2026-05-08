@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppSavingsRouteImport } from './routes/_app.savings'
 import { Route as AppPayoffRouteImport } from './routes/_app.payoff'
 import { Route as AppIncomeRouteImport } from './routes/_app.income'
 import { Route as AppCardsRouteImport } from './routes/_app.cards'
@@ -29,6 +30,11 @@ const AppRoute = AppRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSavingsRoute = AppSavingsRouteImport.update({
+  id: '/savings',
+  path: '/savings',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPayoffRoute = AppPayoffRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/cards': typeof AppCardsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
+  '/savings': typeof AppSavingsRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/cards': typeof AppCardsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
+  '/savings': typeof AppSavingsRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -76,13 +84,21 @@ export interface FileRoutesById {
   '/_app/cards': typeof AppCardsRoute
   '/_app/income': typeof AppIncomeRoute
   '/_app/payoff': typeof AppPayoffRoute
+  '/_app/savings': typeof AppSavingsRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/bills' | '/cards' | '/income' | '/payoff'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/bills'
+    | '/cards'
+    | '/income'
+    | '/payoff'
+    | '/savings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/bills' | '/cards' | '/income' | '/payoff' | '/'
+  to: '/login' | '/bills' | '/cards' | '/income' | '/payoff' | '/savings' | '/'
   id:
     | '__root__'
     | '/_app'
@@ -91,6 +107,7 @@ export interface FileRouteTypes {
     | '/_app/cards'
     | '/_app/income'
     | '/_app/payoff'
+    | '/_app/savings'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -120,6 +137,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/savings': {
+      id: '/_app/savings'
+      path: '/savings'
+      fullPath: '/savings'
+      preLoaderRoute: typeof AppSavingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/payoff': {
@@ -158,6 +182,7 @@ interface AppRouteChildren {
   AppCardsRoute: typeof AppCardsRoute
   AppIncomeRoute: typeof AppIncomeRoute
   AppPayoffRoute: typeof AppPayoffRoute
+  AppSavingsRoute: typeof AppSavingsRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -166,6 +191,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCardsRoute: AppCardsRoute,
   AppIncomeRoute: AppIncomeRoute,
   AppPayoffRoute: AppPayoffRoute,
+  AppSavingsRoute: AppSavingsRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
