@@ -16,7 +16,9 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppSavingsRouteImport } from './routes/_app.savings'
 import { Route as AppPayoffRouteImport } from './routes/_app.payoff'
 import { Route as AppIncomeRouteImport } from './routes/_app.income'
+import { Route as AppChartsRouteImport } from './routes/_app.charts'
 import { Route as AppCardsRouteImport } from './routes/_app.cards'
+import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
 import { Route as AppBillsRouteImport } from './routes/_app.bills'
 
 const LoginRoute = LoginRouteImport.update({
@@ -53,9 +55,19 @@ const AppIncomeRoute = AppIncomeRouteImport.update({
   path: '/income',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChartsRoute = AppChartsRouteImport.update({
+  id: '/charts',
+  path: '/charts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCardsRoute = AppCardsRouteImport.update({
   id: '/cards',
   path: '/cards',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBillsRoute = AppBillsRouteImport.update({
@@ -68,7 +80,9 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/calendar': typeof AppCalendarRoute
   '/cards': typeof AppCardsRoute
+  '/charts': typeof AppChartsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
   '/savings': typeof AppSavingsRoute
@@ -77,7 +91,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/calendar': typeof AppCalendarRoute
   '/cards': typeof AppCardsRoute
+  '/charts': typeof AppChartsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
   '/savings': typeof AppSavingsRoute
@@ -89,7 +105,9 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/bills': typeof AppBillsRoute
+  '/_app/calendar': typeof AppCalendarRoute
   '/_app/cards': typeof AppCardsRoute
+  '/_app/charts': typeof AppChartsRoute
   '/_app/income': typeof AppIncomeRoute
   '/_app/payoff': typeof AppPayoffRoute
   '/_app/savings': typeof AppSavingsRoute
@@ -102,7 +120,9 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/bills'
+    | '/calendar'
     | '/cards'
+    | '/charts'
     | '/income'
     | '/payoff'
     | '/savings'
@@ -111,7 +131,9 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/bills'
+    | '/calendar'
     | '/cards'
+    | '/charts'
     | '/income'
     | '/payoff'
     | '/savings'
@@ -122,7 +144,9 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/bills'
+    | '/_app/calendar'
     | '/_app/cards'
+    | '/_app/charts'
     | '/_app/income'
     | '/_app/payoff'
     | '/_app/savings'
@@ -186,11 +210,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIncomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/charts': {
+      id: '/_app/charts'
+      path: '/charts'
+      fullPath: '/charts'
+      preLoaderRoute: typeof AppChartsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/cards': {
       id: '/_app/cards'
       path: '/cards'
       fullPath: '/cards'
       preLoaderRoute: typeof AppCardsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/calendar': {
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/bills': {
@@ -205,7 +243,9 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppBillsRoute: typeof AppBillsRoute
+  AppCalendarRoute: typeof AppCalendarRoute
   AppCardsRoute: typeof AppCardsRoute
+  AppChartsRoute: typeof AppChartsRoute
   AppIncomeRoute: typeof AppIncomeRoute
   AppPayoffRoute: typeof AppPayoffRoute
   AppSavingsRoute: typeof AppSavingsRoute
@@ -215,7 +255,9 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillsRoute: AppBillsRoute,
+  AppCalendarRoute: AppCalendarRoute,
   AppCardsRoute: AppCardsRoute,
+  AppChartsRoute: AppChartsRoute,
   AppIncomeRoute: AppIncomeRoute,
   AppPayoffRoute: AppPayoffRoute,
   AppSavingsRoute: AppSavingsRoute,
@@ -232,3 +274,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
