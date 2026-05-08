@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useIncome, useBills, useCards, useSavings, useSettings, useBillPayments } from "@/lib/data";
 import { fmtMoney, incomeOccurrencesInMonth, simulatePayoff, addMonths } from "@/lib/finance";
 import { PageHeader, StatCard } from "@/components/ui-bits";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Wallet, Receipt, CreditCard, PiggyBank, TrendingDown, CalendarDays } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { SetupWizard } from "@/components/setup-wizard";
 
 export function Dashboard() {
   const now = new Date();
