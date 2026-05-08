@@ -71,7 +71,25 @@ export function CardsPage() {
                     </div>
                   </div>
                   <div className="text-2xl font-bold tracking-tight mb-1">{fmtMoney(c.balance)}</div>
-                  <div className="text-xs text-muted-foreground mb-2">of {fmtMoney(c.credit_limit)} limit</div>
+                  <div className="text-xs text-muted-foreground mb-3">of {fmtMoney(c.credit_limit)} limit</div>
+                  {c.statement_balance > 0 && (
+                    <div className="rounded-md border border-border bg-accent/40 p-3 mb-3 space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Pay to avoid interest</span>
+                        <span className="font-semibold text-success">{fmtMoney(c.statement_balance)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Pending (post-statement)</span>
+                        <span className="font-medium">{fmtMoney(Math.max(0, c.balance - c.statement_balance))}</span>
+                      </div>
+                      {c.statement_due_date && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Due by</span>
+                          <span className="font-medium">{new Date(c.statement_due_date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <Progress value={Math.min(100, cu)} />
                   <div className={`text-xs mt-1 font-medium ${tone}`}>{cu.toFixed(0)}% used</div>
                 </Card>
