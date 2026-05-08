@@ -88,7 +88,7 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
   open: boolean; onOpenChange: (v: boolean) => void; editing: CreditCard | null;
   onSubmit: (row: Partial<CreditCard> & { id?: string }) => Promise<void>;
 }) {
-  const [f, setF] = useState({ name: "", balance: "", credit_limit: "", apr: "", minimum_payment: "", due_day: "", statement_day: "" });
+  const [f, setF] = useState({ name: "", balance: "", credit_limit: "", apr: "", minimum_payment: "", due_day: "", statement_day: "", statement_balance: "", statement_due_date: "" });
   useEffect(() => {
     if (!open) return;
     setF({
@@ -99,6 +99,8 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
       minimum_payment: editing ? String(editing.minimum_payment) : "",
       due_day: editing?.due_day ? String(editing.due_day) : "",
       statement_day: editing?.statement_day ? String(editing.statement_day) : "",
+      statement_balance: editing ? String(editing.statement_balance ?? 0) : "",
+      statement_due_date: editing?.statement_due_date ?? "",
     });
   }, [open, editing]);
 
@@ -115,6 +117,8 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
       minimum_payment: num(f.minimum_payment),
       due_day: f.due_day ? Number(f.due_day) : null,
       statement_day: f.statement_day ? Number(f.statement_day) : null,
+      statement_balance: num(f.statement_balance),
+      statement_due_date: f.statement_due_date || null,
     });
   };
 
@@ -132,16 +136,21 @@ function CardDialog({ open, onOpenChange, editing, onSubmit }: {
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-2">
             <Label>Name</Label>
-            <Input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Visa Rewards" />
+            <Input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Chase Freedom" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {F("balance", "Current balance")}
             {F("credit_limit", "Credit limit")}
             {F("apr", "APR %")}
             {F("minimum_payment", "Minimum payment")}
+            {F("statement_balance", "Statement balance (interest-free)")}
+            {F("statement_due_date", "Statement due date", "date", "")}
             {F("due_day", "Due day", "number", "1")}
             {F("statement_day", "Statement day", "number", "1")}
           </div>
+          <p className="text-xs text-muted-foreground">
+            Chase (and most issuers) charge no interest on new purchases if you pay the full <strong>statement balance</strong> by the due date. Anything above that is your pending/remaining balance.
+          </p>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit">{editing ? "Save" : "Add"}</Button>
