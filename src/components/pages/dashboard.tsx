@@ -100,7 +100,12 @@ export function Dashboard() {
   if (empty) {
     return (
       <div>
-        <PageHeader title="Welcome to Ledger" description="Set up your money picture in a few steps." />
+        <SetupWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+        <PageHeader
+          title="Welcome to Ledger"
+          description="Set up your money picture in a few steps."
+          action={<Button onClick={() => setWizardOpen(true)}>Run setup wizard</Button>}
+        />
         <div className="grid gap-4 md:grid-cols-3">
           <SetupCard to="/income" icon={<Wallet className="size-5" />} title="Add income" desc="Salaries and side hustles." />
           <SetupCard to="/bills" icon={<Receipt className="size-5" />} title="Add bills" desc="Rent, utilities, subscriptions." />
