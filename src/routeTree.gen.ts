@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppIncomeRouteImport } from './routes/_app.income'
+import { Route as AppBillsRouteImport } from './routes/_app.bills'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -33,14 +34,21 @@ const AppIncomeRoute = AppIncomeRouteImport.update({
   path: '/income',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillsRoute = AppBillsRouteImport.update({
+  id: '/bills',
+  path: '/bills',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/bills': typeof AppBillsRoute
   '/income': typeof AppIncomeRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/bills': typeof AppBillsRoute
   '/income': typeof AppIncomeRoute
   '/': typeof AppIndexRoute
 }
@@ -48,15 +56,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/bills': typeof AppBillsRoute
   '/_app/income': typeof AppIncomeRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/income'
+  fullPaths: '/' | '/login' | '/bills' | '/income'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/income' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/income' | '/_app/'
+  to: '/login' | '/bills' | '/income' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/bills'
+    | '/_app/income'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,15 +109,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIncomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/bills': {
+      id: '/_app/bills'
+      path: '/bills'
+      fullPath: '/bills'
+      preLoaderRoute: typeof AppBillsRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppBillsRoute: typeof AppBillsRoute
   AppIncomeRoute: typeof AppIncomeRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBillsRoute: AppBillsRoute,
   AppIncomeRoute: AppIncomeRoute,
   AppIndexRoute: AppIndexRoute,
 }
