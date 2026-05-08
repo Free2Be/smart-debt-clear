@@ -31,6 +31,13 @@ export function Dashboard() {
     (bills.data?.length ?? 0) === 0 &&
     (cards.data?.length ?? 0) === 0;
 
+  const [wizardOpen, setWizardOpen] = useState(false);
+  useEffect(() => {
+    if (empty && !localStorage.getItem("ledger-wizard-done")) {
+      setWizardOpen(true);
+    }
+  }, [empty]);
+
   const totals = useMemo(() => {
     const occByIncome = (income.data ?? []).map(i => ({
       income: i,
