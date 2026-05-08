@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useIncome, useBills, useCards, useSavings, useSettings, useBillPayments } from "@/lib/data";
 import { fmtMoney, incomeOccurrencesInMonth, simulatePayoff, addMonths } from "@/lib/finance";
 import { PageHeader, StatCard } from "@/components/ui-bits";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Wallet, Receipt, CreditCard, PiggyBank, TrendingDown, CalendarDays } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { SetupWizard } from "@/components/setup-wizard";
 
 export function Dashboard() {
   const now = new Date();
@@ -29,6 +30,13 @@ export function Dashboard() {
     (income.data?.length ?? 0) === 0 &&
     (bills.data?.length ?? 0) === 0 &&
     (cards.data?.length ?? 0) === 0;
+
+  const [wizardOpen, setWizardOpen] = useState(false);
+  useEffect(() => {
+    if (empty && !localStorage.getItem("ledger-wizard-done")) {
+      setWizardOpen(true);
+    }
+  }, [empty]);
 
   const totals = useMemo(() => {
     const occByIncome = (income.data ?? []).map(i => ({
@@ -92,7 +100,12 @@ export function Dashboard() {
   if (empty) {
     return (
       <div>
-        <PageHeader title="Welcome to Ledger" description="Set up your money picture in a few steps." />
+        <SetupWizard open={wizardOpen} onOpenChange={setWizardOpen} />
+        <PageHeader
+          title="Welcome to Ledger"
+          description="Set up your money picture in a few steps."
+          action={<Button onClick={() => setWizardOpen(true)}>Run setup wizard</Button>}
+        />
         <div className="grid gap-4 md:grid-cols-3">
           <SetupCard to="/income" icon={<Wallet className="size-5" />} title="Add income" desc="Salaries and side hustles." />
           <SetupCard to="/bills" icon={<Receipt className="size-5" />} title="Add bills" desc="Rent, utilities, subscriptions." />
