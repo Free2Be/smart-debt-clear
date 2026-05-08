@@ -15,17 +15,21 @@ import {
   Sun,
   Menu,
   X,
+  Calendar as CalendarIcon,
+  BarChart3,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/calendar", label: "Calendar", icon: CalendarIcon },
   { to: "/income", label: "Income", icon: Wallet },
   { to: "/bills", label: "Bills", icon: Receipt },
   { to: "/cards", label: "Credit Cards", icon: CreditCard },
   { to: "/payoff", label: "Payoff Planner", icon: TrendingDown },
   { to: "/savings", label: "Savings", icon: PiggyBank },
+  { to: "/charts", label: "Charts", icon: BarChart3 },
   { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
