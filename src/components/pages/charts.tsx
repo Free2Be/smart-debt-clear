@@ -25,7 +25,7 @@ export function ChartsPage() {
     for (let off = 0; off < 6; off++) {
       const d = new Date(now.getFullYear(), now.getMonth() + off, 1);
       const inc = income.reduce((s, i) => {
-        const occ = incomeOccurrencesInMonth(i.payday_date, i.frequency, d.getFullYear(), d.getMonth());
+        const occ = incomeOccurrencesInMonth(i.payday_date, i.frequency, d.getFullYear(), d.getMonth(), i.second_payday_day, i.custom_interval_days);
         return s + i.amount * occ.length;
       }, 0);
       const bil = bills.reduce((s, b) => s + b.amount, 0);
