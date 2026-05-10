@@ -17,6 +17,7 @@ import {
   X,
   Calendar as CalendarIcon,
   BarChart3,
+  Printer,
   Wallet2,
 
 } from "lucide-react";
