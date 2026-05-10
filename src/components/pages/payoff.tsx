@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ArrowDown, ArrowUp, AlertTriangle, Download } from "lucide-react";
-import { exportCSV } from "@/lib/export-csv";
+import { downloadCSV } from "@/lib/export-csv";
 
 export function PayoffPage() {
   const { data: cards = [] } = useCards();
