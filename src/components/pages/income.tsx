@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useIncome, useUpsertIncome, useDeleteIncome, type IncomeSource } from "@/lib/data";
-import { fmtMoney, incomeOccurrencesInMonth } from "@/lib/finance";
+import { fmtMoney, incomeOccurrencesInMonth, futurePaydays } from "@/lib/finance";
 import { PageHeader, EmptyState } from "@/components/ui-bits";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,31 @@ export function IncomePage() {
       })),
     )
     .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  const [horizon, setHorizon] = useState<"3" | "6" | "12">("6");
+  const future = useMemo(() => {
+    const months = Number(horizon);
+    const perSource = Math.ceil((months * 31) / 7) + 2; // generous upper bound
+    const cutoff = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+    const all = data.flatMap(i =>
+      futurePaydays(i.payday_date, i.frequency, perSource, now)
+        .filter(d => d <= cutoff)
+        .map(d => ({ name: i.name, amount: i.amount, date: d, frequency: i.frequency })),
+    );
+    all.sort((a, b) => a.date.getTime() - b.date.getTime());
+    // Group by year-month
+    const groups = new Map<string, { label: string; total: number; items: typeof all }>();
+    for (const p of all) {
+      const key = `${p.date.getFullYear()}-${p.date.getMonth()}`;
+      const label = p.date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const g = groups.get(key) ?? { label, total: 0, items: [] };
+      g.total += p.amount;
+      g.items.push(p);
+      groups.set(key, g);
+    }
+    const total = all.reduce((s, p) => s + p.amount, 0);
+    return { groups: Array.from(groups.values()), total, count: all.length };
+  }, [data, horizon, now]);
 
   const onAdd = () => {
     setEditing(null);
@@ -127,6 +152,64 @@ export function IncomePage() {
             )}
           </Card>
         </div>
+      )}
+
+      {data.length > 0 && (
+        <Card className="p-5 mt-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2">
+                <CalendarDays className="size-4 text-info" /> Future paychecks
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Projected from your pay schedule. {future.count} paychecks · {fmtMoney(future.total)} total
+              </p>
+            </div>
+            <Select value={horizon} onValueChange={v => setHorizon(v as "3" | "6" | "12")}>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">Next 3 months</SelectItem>
+                <SelectItem value="6">Next 6 months</SelectItem>
+                <SelectItem value="12">Next 12 months</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {future.groups.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No upcoming paychecks in this window.</p>
+          ) : (
+            <div className="space-y-5">
+              {future.groups.map(g => (
+                <div key={g.label}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">{g.label}</div>
+                    <div className="text-sm font-semibold text-success">{fmtMoney(g.total)}</div>
+                  </div>
+                  <ul className="space-y-1">
+                    {g.items.map((p, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center justify-between py-2 px-3 rounded-md bg-accent/40 border border-border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-xs font-mono w-12 text-muted-foreground">
+                            {p.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{p.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {p.date.toLocaleDateString("en-US", { weekday: "long" })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm font-semibold text-success">+{fmtMoney(p.amount)}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );
