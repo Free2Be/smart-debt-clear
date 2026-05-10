@@ -1,22 +1,24 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useIncome, useUpsertIncome, useDeleteIncome, type IncomeSource } from "@/lib/data";
-import { fmtMoney, incomeOccurrencesInMonth, futurePaydays } from "@/lib/finance";
+import { fmtMoney, incomeOccurrencesInMonth, futurePaydays, todayISO } from "@/lib/finance";
 import { PageHeader, EmptyState } from "@/components/ui-bits";
+import { ConfirmDelete } from "@/components/confirm-delete";
+import { downloadCSV } from "@/lib/export-csv";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, CalendarDays } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, CalendarDays, Download } from "lucide-react";
 import { toast } from "sonner";
 
 const FREQS = [
   { value: "weekly", label: "Weekly" },
-  { value: "biweekly", label: "Biweekly" },
-  { value: "semimonthly", label: "Twice monthly" },
+  { value: "biweekly", label: "Biweekly (every 2 weeks)" },
+  { value: "semimonthly", label: "Twice monthly (e.g. 1st & 15th)" },
   { value: "monthly", label: "Monthly" },
-  { value: "custom", label: "Custom" },
+  { value: "custom", label: "Custom interval" },
 ] as const;
 
 export function IncomePage() {
@@ -28,32 +30,36 @@ export function IncomePage() {
 
   const now = new Date();
   const totalMonth = data.reduce((s, i) => {
-    const occ = incomeOccurrencesInMonth(i.payday_date, i.frequency, now.getFullYear(), now.getMonth());
+    const occ = incomeOccurrencesInMonth(
+      { payday: i.payday_date, frequency: i.frequency, secondPaydayDay: i.second_payday_day, customIntervalDays: i.custom_interval_days },
+      i.frequency, now.getFullYear(), now.getMonth(),
+    );
     return s + i.amount * occ.length;
   }, 0);
 
   const allPaydays = data
     .flatMap(i =>
-      incomeOccurrencesInMonth(i.payday_date, i.frequency, now.getFullYear(), now.getMonth()).map(d => ({
-        name: i.name,
-        amount: i.amount,
-        date: d,
-      })),
+      incomeOccurrencesInMonth(
+        { payday: i.payday_date, frequency: i.frequency, secondPaydayDay: i.second_payday_day, customIntervalDays: i.custom_interval_days },
+        i.frequency, now.getFullYear(), now.getMonth(),
+      ).map(d => ({ name: i.name, amount: i.amount, date: d })),
     )
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   const [horizon, setHorizon] = useState<"3" | "6" | "12">("6");
   const future = useMemo(() => {
     const months = Number(horizon);
-    const perSource = Math.ceil((months * 31) / 7) + 2; // generous upper bound
+    const perSource = Math.ceil((months * 31) / 7) + 2;
     const cutoff = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
     const all = data.flatMap(i =>
-      futurePaydays(i.payday_date, i.frequency, perSource, now)
+      futurePaydays(
+        { payday: i.payday_date, frequency: i.frequency, secondPaydayDay: i.second_payday_day, customIntervalDays: i.custom_interval_days },
+        i.frequency, perSource, now,
+      )
         .filter(d => d <= cutoff)
         .map(d => ({ name: i.name, amount: i.amount, date: d, frequency: i.frequency })),
     );
     all.sort((a, b) => a.date.getTime() - b.date.getTime());
-    // Group by year-month
     const groups = new Map<string, { label: string; total: number; items: typeof all }>();
     for (const p of all) {
       const key = `${p.date.getFullYear()}-${p.date.getMonth()}`;
@@ -64,12 +70,16 @@ export function IncomePage() {
       groups.set(key, g);
     }
     const total = all.reduce((s, p) => s + p.amount, 0);
-    return { groups: Array.from(groups.values()), total, count: all.length };
+    return { groups: Array.from(groups.values()), total, count: all.length, all };
   }, [data, horizon, now]);
 
-  const onAdd = () => {
-    setEditing(null);
-    setOpen(true);
+  const onAdd = () => { setEditing(null); setOpen(true); };
+  const handleExport = () => {
+    downloadCSV("paychecks-projection.csv", future.all.map(p => ({
+      date: p.date.toISOString().slice(0, 10),
+      day_of_week: p.date.toLocaleDateString("en-US", { weekday: "long" }),
+      source: p.name, amount: p.amount, frequency: p.frequency,
+    })));
   };
 
   return (
@@ -78,19 +88,20 @@ export function IncomePage() {
         title="Income"
         description={`Total this month: ${fmtMoney(totalMonth)}`}
         action={
-          <Button onClick={onAdd}><Plus className="size-4 mr-1" />Add income</Button>
+          <div className="flex gap-2">
+            {data.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExport}>
+                <Download className="size-4 mr-1" />Export
+              </Button>
+            )}
+            <Button onClick={onAdd}><Plus className="size-4 mr-1" />Add income</Button>
+          </div>
         }
       />
 
       <IncomeDialog
-        open={open}
-        onOpenChange={setOpen}
-        editing={editing}
-        onSubmit={async row => {
-          await upsert.mutateAsync(row);
-          setOpen(false);
-          toast.success(editing ? "Updated" : "Added");
-        }}
+        open={open} onOpenChange={setOpen} editing={editing}
+        onSubmit={async row => { await upsert.mutateAsync(row); setOpen(false); toast.success(editing ? "Updated" : "Added"); }}
       />
 
       {isLoading ? (
@@ -108,20 +119,23 @@ export function IncomePage() {
             <ul className="space-y-2">
               {data.map(i => (
                 <li key={i.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div>
-                    <div className="font-medium">{i.name}</div>
-                    <div className="text-xs text-muted-foreground capitalize">
-                      {i.frequency.replace("semi", "twice ")} · starts {new Date(i.payday_date + "T00:00:00").toLocaleDateString()}
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{i.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {freqLabel(i)} · starts {new Date(i.payday_date + "T00:00:00").toLocaleDateString()}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <div className="font-semibold text-success">{fmtMoney(i.amount)}</div>
                     <Button variant="ghost" size="icon" onClick={() => { setEditing(i); setOpen(true); }}>
                       <Pencil className="size-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => del.mutate(i.id)}>
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
+                    <ConfirmDelete
+                      title={`Delete "${i.name}"?`}
+                      description="This income source will be removed from projections."
+                      onConfirm={() => del.mutateAsync(i.id)}
+                      trigger={<Button variant="ghost" size="icon"><Trash2 className="size-4 text-destructive" /></Button>}
+                    />
                   </div>
                 </li>
               ))}
@@ -186,19 +200,14 @@ export function IncomePage() {
                   </div>
                   <ul className="space-y-1">
                     {g.items.map((p, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-center justify-between py-2 px-3 rounded-md bg-accent/40 border border-border"
-                      >
+                      <li key={idx} className="flex items-center justify-between py-2 px-3 rounded-md bg-accent/40 border border-border">
                         <div className="flex items-center gap-3">
                           <div className="text-xs font-mono w-12 text-muted-foreground">
                             {p.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </div>
                           <div>
                             <div className="text-sm font-medium">{p.name}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {p.date.toLocaleDateString("en-US", { weekday: "long" })}
-                            </div>
+                            <div className="text-xs text-muted-foreground">{p.date.toLocaleDateString("en-US", { weekday: "long" })}</div>
                           </div>
                         </div>
                         <div className="text-sm font-semibold text-success">+{fmtMoney(p.amount)}</div>
@@ -215,42 +224,72 @@ export function IncomePage() {
   );
 }
 
+function freqLabel(i: IncomeSource): string {
+  if (i.frequency === "semimonthly") {
+    const d1 = new Date(i.payday_date + "T00:00:00").getDate();
+    const d2 = i.second_payday_day ?? d1 + 14;
+    return `Twice monthly (day ${d1} & ${d2})`;
+  }
+  if (i.frequency === "custom") return `Every ${i.custom_interval_days ?? "?"} days`;
+  return i.frequency.charAt(0).toUpperCase() + i.frequency.slice(1);
+}
+
 function IncomeDialog({
-  open,
-  onOpenChange,
-  editing,
-  onSubmit,
+  open, onOpenChange, editing, onSubmit,
 }: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  editing: IncomeSource | null;
+  open: boolean; onOpenChange: (v: boolean) => void; editing: IncomeSource | null;
   onSubmit: (row: Partial<IncomeSource> & { id?: string }) => Promise<void>;
 }) {
-  const [name, setName] = useState(editing?.name ?? "");
-  const [amount, setAmount] = useState<string>(String(editing?.amount ?? ""));
-  const [payday, setPayday] = useState(editing?.payday_date ?? new Date().toISOString().slice(0, 10));
-  const [frequency, setFrequency] = useState<IncomeSource["frequency"]>(editing?.frequency ?? "biweekly");
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [payday, setPayday] = useState(todayISO());
+  const [frequency, setFrequency] = useState<IncomeSource["frequency"]>("biweekly");
+  const [secondDay, setSecondDay] = useState<string>("");
+  const [intervalDays, setIntervalDays] = useState<string>("");
 
-  // reset state when editing changes
-  useStateSync({ open, editing }, () => {
+  useEffect(() => {
+    if (!open) return;
     setName(editing?.name ?? "");
-    setAmount(String(editing?.amount ?? ""));
-    setPayday(editing?.payday_date ?? new Date().toISOString().slice(0, 10));
+    setAmount(editing ? String(editing.amount) : "");
+    setPayday(editing?.payday_date ?? todayISO());
     setFrequency(editing?.frequency ?? "biweekly");
-  });
+    setSecondDay(editing?.second_payday_day ? String(editing.second_payday_day) : "");
+    setIntervalDays(editing?.custom_interval_days ? String(editing.custom_interval_days) : "");
+  }, [open, editing]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Name is required");
     const amt = Number(amount);
     if (!Number.isFinite(amt) || amt <= 0) return toast.error("Enter a valid amount");
-    await onSubmit({ id: editing?.id, name: name.trim(), amount: amt, payday_date: payday, frequency });
+    if (frequency === "custom") {
+      const days = Number(intervalDays);
+      if (!Number.isInteger(days) || days < 1) return toast.error("Custom interval must be a positive number of days");
+    }
+    if (frequency === "semimonthly" && secondDay) {
+      const d2 = Number(secondDay);
+      if (!Number.isInteger(d2) || d2 < 1 || d2 > 31) return toast.error("Second payday must be 1–31");
+    }
+    await onSubmit({
+      id: editing?.id,
+      name: name.trim(),
+      amount: amt,
+      payday_date: payday,
+      frequency,
+      second_payday_day: frequency === "semimonthly" && secondDay ? Number(secondDay) : null,
+      custom_interval_days: frequency === "custom" ? Number(intervalDays) : null,
+    });
   };
+
+  const startDay = new Date(payday + "T00:00:00").getDate();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>{editing ? "Edit income" : "Add income"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>{editing ? "Edit income" : "Add income"}</DialogTitle>
+          <DialogDescription>Set how often you get paid so projections stay accurate.</DialogDescription>
+        </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <div className="space-y-2">
             <Label>Name</Label>
@@ -262,7 +301,7 @@ function IncomeDialog({
               <Input type="number" step="0.01" min="0" value={amount} onChange={e => setAmount(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>First payday</Label>
+              <Label>{frequency === "semimonthly" ? "First payday" : "Most recent payday"}</Label>
               <Input type="date" value={payday} onChange={e => setPayday(e.target.value)} />
             </div>
           </div>
@@ -275,6 +314,19 @@ function IncomeDialog({
               </SelectContent>
             </Select>
           </div>
+          {frequency === "semimonthly" && (
+            <div className="space-y-2">
+              <Label>Second payday (day of month)</Label>
+              <Input type="number" min="1" max="31" placeholder={String(startDay + 14)} value={secondDay} onChange={e => setSecondDay(e.target.value)} />
+              <p className="text-xs text-muted-foreground">First day = {startDay}. Common: 1 & 15, or 15 & last day.</p>
+            </div>
+          )}
+          {frequency === "custom" && (
+            <div className="space-y-2">
+              <Label>Days between paychecks</Label>
+              <Input type="number" min="1" placeholder="e.g. 10" value={intervalDays} onChange={e => setIntervalDays(e.target.value)} />
+            </div>
+          )}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit">{editing ? "Save" : "Add"}</Button>
@@ -283,11 +335,4 @@ function IncomeDialog({
       </DialogContent>
     </Dialog>
   );
-}
-
-import { useEffect } from "react";
-function useStateSync<T>(deps: T, fn: () => void) {
-  // re-init when open/editing change
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(fn, [JSON.stringify(deps)]);
 }
