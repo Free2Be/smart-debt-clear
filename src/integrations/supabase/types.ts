@@ -82,6 +82,102 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_card_balance_history: {
+        Row: {
+          balance: number
+          balance_date: string
+          created_at: string
+          credit_card_id: string
+          id: string
+          statement_balance: number
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          balance_date: string
+          created_at?: string
+          credit_card_id: string
+          id?: string
+          statement_balance?: number
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          balance_date?: string
+          created_at?: string
+          credit_card_id?: string
+          id?: string
+          statement_balance?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credit_card_interest_charges: {
+        Row: {
+          amount: number
+          apr_at_time: number
+          charge_date: string
+          created_at: string
+          credit_card_id: string
+          id: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          apr_at_time?: number
+          charge_date: string
+          created_at?: string
+          credit_card_id: string
+          id?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          apr_at_time?: number
+          charge_date?: string
+          created_at?: string
+          credit_card_id?: string
+          id?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      credit_card_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          credit_card_id: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          credit_card_id: string
+          id?: string
+          notes?: string | null
+          payment_date: string
+          payment_type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credit_card_id?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_cards: {
         Row: {
           apr: number
@@ -134,28 +230,151 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          custom_interval_days: number | null
           frequency: string
           id: string
           name: string
           payday_date: string
+          second_payday_day: number | null
           user_id: string
         }
         Insert: {
           amount?: number
           created_at?: string
+          custom_interval_days?: number | null
           frequency: string
           id?: string
           name: string
           payday_date: string
+          second_payday_day?: number | null
           user_id: string
         }
         Update: {
           amount?: number
           created_at?: string
+          custom_interval_days?: number | null
           frequency?: string
           id?: string
           name?: string
           payday_date?: string
+          second_payday_day?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      monthly_budget_settings: {
+        Row: {
+          created_at: string
+          extra_debt_payment: number
+          gas_budget: number
+          grocery_budget: number
+          id: string
+          month: string
+          notes: string | null
+          other_budget: number
+          safe_minimum_balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extra_debt_payment?: number
+          gas_budget?: number
+          grocery_budget?: number
+          id?: string
+          month: string
+          notes?: string | null
+          other_budget?: number
+          safe_minimum_balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extra_debt_payment?: number
+          gas_budget?: number
+          grocery_budget?: number
+          id?: string
+          month?: string
+          notes?: string | null
+          other_budget?: number
+          safe_minimum_balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      one_time_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          expense_date: string
+          id: string
+          name: string
+          notes: string | null
+          paid: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          expense_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          paid?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          expense_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          paid?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      paycheck_allocations: {
+        Row: {
+          allocated_to_id: string | null
+          allocated_to_type: string
+          amount: number
+          created_at: string
+          id: string
+          income_source_id: string
+          notes: string | null
+          paycheck_date: string
+          user_id: string
+        }
+        Insert: {
+          allocated_to_id?: string | null
+          allocated_to_type: string
+          amount?: number
+          created_at?: string
+          id?: string
+          income_source_id: string
+          notes?: string | null
+          paycheck_date: string
+          user_id: string
+        }
+        Update: {
+          allocated_to_id?: string | null
+          allocated_to_type?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          income_source_id?: string
+          notes?: string | null
+          paycheck_date?: string
           user_id?: string
         }
         Relationships: []
