@@ -42,6 +42,31 @@ export function IncomePage() {
     )
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  const [horizon, setHorizon] = useState<"3" | "6" | "12">("6");
+  const future = useMemo(() => {
+    const months = Number(horizon);
+    const perSource = Math.ceil((months * 31) / 7) + 2; // generous upper bound
+    const cutoff = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+    const all = data.flatMap(i =>
+      futurePaydays(i.payday_date, i.frequency, perSource, now)
+        .filter(d => d <= cutoff)
+        .map(d => ({ name: i.name, amount: i.amount, date: d, frequency: i.frequency })),
+    );
+    all.sort((a, b) => a.date.getTime() - b.date.getTime());
+    // Group by year-month
+    const groups = new Map<string, { label: string; total: number; items: typeof all }>();
+    for (const p of all) {
+      const key = `${p.date.getFullYear()}-${p.date.getMonth()}`;
+      const label = p.date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const g = groups.get(key) ?? { label, total: 0, items: [] };
+      g.total += p.amount;
+      g.items.push(p);
+      groups.set(key, g);
+    }
+    const total = all.reduce((s, p) => s + p.amount, 0);
+    return { groups: Array.from(groups.values()), total, count: all.length };
+  }, [data, horizon, now]);
+
   const onAdd = () => {
     setEditing(null);
     setOpen(true);
