@@ -76,7 +76,7 @@ export function PayoffPage() {
       total_interest: m.totalInterest.toFixed(2),
       remaining: m.remaining.toFixed(2),
     }));
-    exportCSV("payoff-schedule.csv", rows);
+    downloadCSV("payoff-schedule.csv", rows);
   };
 
   return (
