@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppSavingsRouteImport } from './routes/_app.savings'
+import { Route as AppReportRouteImport } from './routes/_app.report'
 import { Route as AppPayoffRouteImport } from './routes/_app.payoff'
 import { Route as AppIncomeRouteImport } from './routes/_app.income'
 import { Route as AppChartsRouteImport } from './routes/_app.charts'
@@ -44,6 +45,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 const AppSavingsRoute = AppSavingsRouteImport.update({
   id: '/savings',
   path: '/savings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportRoute = AppReportRouteImport.update({
+  id: '/report',
+  path: '/report',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPayoffRoute = AppPayoffRouteImport.update({
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/charts': typeof AppChartsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
+  '/report': typeof AppReportRoute
   '/savings': typeof AppSavingsRoute
   '/settings': typeof AppSettingsRoute
 }
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/charts': typeof AppChartsRoute
   '/income': typeof AppIncomeRoute
   '/payoff': typeof AppPayoffRoute
+  '/report': typeof AppReportRoute
   '/savings': typeof AppSavingsRoute
   '/settings': typeof AppSettingsRoute
   '/': typeof AppIndexRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/_app/charts': typeof AppChartsRoute
   '/_app/income': typeof AppIncomeRoute
   '/_app/payoff': typeof AppPayoffRoute
+  '/_app/report': typeof AppReportRoute
   '/_app/savings': typeof AppSavingsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/': typeof AppIndexRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/charts'
     | '/income'
     | '/payoff'
+    | '/report'
     | '/savings'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/charts'
     | '/income'
     | '/payoff'
+    | '/report'
     | '/savings'
     | '/settings'
     | '/'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/_app/charts'
     | '/_app/income'
     | '/_app/payoff'
+    | '/_app/report'
     | '/_app/savings'
     | '/_app/settings'
     | '/_app/'
@@ -206,6 +218,13 @@ declare module '@tanstack/react-router' {
       path: '/savings'
       fullPath: '/savings'
       preLoaderRoute: typeof AppSavingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/report': {
+      id: '/_app/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof AppReportRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/payoff': {
@@ -268,6 +287,7 @@ interface AppRouteChildren {
   AppChartsRoute: typeof AppChartsRoute
   AppIncomeRoute: typeof AppIncomeRoute
   AppPayoffRoute: typeof AppPayoffRoute
+  AppReportRoute: typeof AppReportRoute
   AppSavingsRoute: typeof AppSavingsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -281,6 +301,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppChartsRoute: AppChartsRoute,
   AppIncomeRoute: AppIncomeRoute,
   AppPayoffRoute: AppPayoffRoute,
+  AppReportRoute: AppReportRoute,
   AppSavingsRoute: AppSavingsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
@@ -295,3 +316,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
