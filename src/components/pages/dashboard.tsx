@@ -41,7 +41,10 @@ export function Dashboard() {
   const totals = useMemo(() => {
     const occByIncome = (income.data ?? []).map(i => ({
       income: i,
-      occ: incomeOccurrencesInMonth(i.payday_date, i.frequency, year, month),
+      occ: incomeOccurrencesInMonth(
+        { payday: i.payday_date, frequency: i.frequency, secondPaydayDay: i.second_payday_day, customIntervalDays: i.custom_interval_days },
+        i.frequency, year, month,
+      ),
     }));
     const totalIncome = occByIncome.reduce((s, x) => s + x.income.amount * x.occ.length, 0);
     const totalBills = (bills.data ?? []).reduce((s, b) => s + b.amount, 0);
