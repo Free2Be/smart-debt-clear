@@ -120,3 +120,9 @@
   }
   h1, h2, h3, h4 { letter-spacing: -0.02em; }
 }
+
+@media print {
+  aside, header.md\:hidden, .print\:hidden { display: none !important; }
+  body, html { background: white !important; color: black !important; }
+  main, .min-h-screen { display: block !important; }
+}
