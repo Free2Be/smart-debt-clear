@@ -148,3 +148,64 @@ export function addMonths(date: Date, n: number): Date {
   d.setMonth(d.getMonth() + n);
   return d;
 }
+
+// Project future paydays for a single income source from `from` (inclusive)
+// up to `count` occurrences.
+export function futurePaydays(
+  payday: string,
+  frequency: "weekly" | "biweekly" | "semimonthly" | "monthly" | "custom",
+  count: number,
+  from: Date = new Date(),
+): Date[] {
+  const start = new Date(payday + "T00:00:00");
+  const out: Date[] = [];
+  const fromMidnight = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+
+  if (frequency === "weekly" || frequency === "biweekly") {
+    const step = frequency === "weekly" ? 7 : 14;
+    const cursor = new Date(start);
+    // Fast-forward to today or later
+    if (cursor < fromMidnight) {
+      const diffDays = Math.floor((fromMidnight.getTime() - cursor.getTime()) / 86400000);
+      const jumps = Math.ceil(diffDays / step);
+      cursor.setDate(cursor.getDate() + jumps * step);
+    }
+    while (out.length < count) {
+      out.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + step);
+    }
+    return out;
+  }
+
+  if (frequency === "semimonthly") {
+    const day1 = start.getDate();
+    let y = fromMidnight.getFullYear();
+    let m = fromMidnight.getMonth();
+    while (out.length < count) {
+      const lastDay = new Date(y, m + 1, 0).getDate();
+      const a = new Date(y, m, Math.min(day1, lastDay));
+      const b = new Date(y, m, Math.min(day1 + 14, lastDay));
+      for (const d of [a, b]) {
+        if (d >= fromMidnight && d >= start && out.length < count) {
+          if (!out.length || out[out.length - 1].getTime() !== d.getTime()) out.push(d);
+        }
+      }
+      m++;
+      if (m > 11) { m = 0; y++; }
+    }
+    return out;
+  }
+
+  // monthly / custom — once per month on payday's day
+  const day = start.getDate();
+  let y = fromMidnight.getFullYear();
+  let m = fromMidnight.getMonth();
+  while (out.length < count) {
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    const d = new Date(y, m, Math.min(day, lastDay));
+    if (d >= fromMidnight && d >= start) out.push(d);
+    m++;
+    if (m > 11) { m = 0; y++; }
+  }
+  return out;
+}
