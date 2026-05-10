@@ -17,6 +17,8 @@ import {
   X,
   Calendar as CalendarIcon,
   BarChart3,
+  Wallet2,
+
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
