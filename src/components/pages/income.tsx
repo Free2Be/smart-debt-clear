@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useIncome, useUpsertIncome, useDeleteIncome, type IncomeSource } from "@/lib/data";
-import { fmtMoney, incomeOccurrencesInMonth } from "@/lib/finance";
+import { fmtMoney, incomeOccurrencesInMonth, futurePaydays } from "@/lib/finance";
 import { PageHeader, EmptyState } from "@/components/ui-bits";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
