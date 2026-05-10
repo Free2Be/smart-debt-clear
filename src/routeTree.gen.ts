@@ -19,6 +19,7 @@ import { Route as AppIncomeRouteImport } from './routes/_app.income'
 import { Route as AppChartsRouteImport } from './routes/_app.charts'
 import { Route as AppCardsRouteImport } from './routes/_app.cards'
 import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
+import { Route as AppBudgetRouteImport } from './routes/_app.budget'
 import { Route as AppBillsRouteImport } from './routes/_app.bills'
 
 const LoginRoute = LoginRouteImport.update({
@@ -70,6 +71,11 @@ const AppCalendarRoute = AppCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBudgetRoute = AppBudgetRouteImport.update({
+  id: '/budget',
+  path: '/budget',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBillsRoute = AppBillsRouteImport.update({
   id: '/bills',
   path: '/bills',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/budget': typeof AppBudgetRoute
   '/calendar': typeof AppCalendarRoute
   '/cards': typeof AppCardsRoute
   '/charts': typeof AppChartsRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/bills': typeof AppBillsRoute
+  '/budget': typeof AppBudgetRoute
   '/calendar': typeof AppCalendarRoute
   '/cards': typeof AppCardsRoute
   '/charts': typeof AppChartsRoute
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/bills': typeof AppBillsRoute
+  '/_app/budget': typeof AppBudgetRoute
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/cards': typeof AppCardsRoute
   '/_app/charts': typeof AppChartsRoute
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/bills'
+    | '/budget'
     | '/calendar'
     | '/cards'
     | '/charts'
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/bills'
+    | '/budget'
     | '/calendar'
     | '/cards'
     | '/charts'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/login'
     | '/_app/bills'
+    | '/_app/budget'
     | '/_app/calendar'
     | '/_app/cards'
     | '/_app/charts'
@@ -231,6 +243,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/budget': {
+      id: '/_app/budget'
+      path: '/budget'
+      fullPath: '/budget'
+      preLoaderRoute: typeof AppBudgetRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/bills': {
       id: '/_app/bills'
       path: '/bills'
@@ -243,6 +262,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppBillsRoute: typeof AppBillsRoute
+  AppBudgetRoute: typeof AppBudgetRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppCardsRoute: typeof AppCardsRoute
   AppChartsRoute: typeof AppChartsRoute
@@ -255,6 +275,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppBillsRoute: AppBillsRoute,
+  AppBudgetRoute: AppBudgetRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppCardsRoute: AppCardsRoute,
   AppChartsRoute: AppChartsRoute,

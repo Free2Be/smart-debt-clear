@@ -17,6 +17,8 @@ import {
   X,
   Calendar as CalendarIcon,
   BarChart3,
+  Wallet2,
+
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,7 @@ const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/calendar", label: "Calendar", icon: CalendarIcon },
   { to: "/income", label: "Income", icon: Wallet },
+  { to: "/budget", label: "Budget", icon: Wallet2 },
   { to: "/bills", label: "Bills", icon: Receipt },
   { to: "/cards", label: "Credit Cards", icon: CreditCard },
   { to: "/payoff", label: "Payoff Planner", icon: TrendingDown },
