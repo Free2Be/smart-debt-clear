@@ -153,6 +153,64 @@ export function IncomePage() {
           </Card>
         </div>
       )}
+
+      {data.length > 0 && (
+        <Card className="p-5 mt-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <h3 className="font-semibold flex items-center gap-2">
+                <CalendarDays className="size-4 text-info" /> Future paychecks
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Projected from your pay schedule. {future.count} paychecks · {fmtMoney(future.total)} total
+              </p>
+            </div>
+            <Select value={horizon} onValueChange={v => setHorizon(v as "3" | "6" | "12")}>
+              <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3">Next 3 months</SelectItem>
+                <SelectItem value="6">Next 6 months</SelectItem>
+                <SelectItem value="12">Next 12 months</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {future.groups.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No upcoming paychecks in this window.</p>
+          ) : (
+            <div className="space-y-5">
+              {future.groups.map(g => (
+                <div key={g.label}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-medium">{g.label}</div>
+                    <div className="text-sm font-semibold text-success">{fmtMoney(g.total)}</div>
+                  </div>
+                  <ul className="space-y-1">
+                    {g.items.map((p, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-center justify-between py-2 px-3 rounded-md bg-accent/40 border border-border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-xs font-mono w-12 text-muted-foreground">
+                            {p.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{p.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {p.date.toLocaleDateString("en-US", { weekday: "long" })}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm font-semibold text-success">+{fmtMoney(p.amount)}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
